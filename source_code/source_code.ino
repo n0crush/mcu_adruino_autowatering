@@ -11,7 +11,8 @@ void show_detail();
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 const float H_MAX = 3.3;                          // adj
-const int MIN_ACT = 40;
+//const int MIN_ACT = 40;                         // const ver
+int MIN_ACT = 40;
 int button = 7 ;                                  // get digital input from pin 7st
 
 float h_input = 1.65;                             // temporory input
@@ -41,7 +42,18 @@ int getButtonStatus(){
   buttonStatus = digitalRead(button);
   return buttonStatus;
 }
+  
+  //--------- unit func
+  void print_change(){
+       lcd.setCursor(0, 0);
+       lcd.print("MinAct: ");
+       lcd.print(MIN_ACT);lcd.print("%");
 
+       delay(200);
+
+  }
+  //---------
+  
 void show_setup(){
   lcd.setCursor(0, 0);
   lcd.print("1-Select MinAct");
@@ -57,6 +69,20 @@ void show_setup(){
      delay(300);
      lcd.cursor();
      delay(300);
+  }
+  
+  //test button
+  
+  short st;
+  for(i=0; i<100; ++i){
+    st = getButtonStatus();
+    if(st==1){                                       //if(st){}
+      MIN_ACT += 5;
+      print_change();
+    }
+    // Serial.println(st);                          // debugging
+    // Serial.println(MIN_ACT);                     // debugging
+    delay(100);
   }
 }
 
@@ -75,10 +101,11 @@ void show_detail(){
   //
   
   lcd.setCursor(0, 1);
-  lcd.print("MinAct:");
-  lcd.print(MIN_ACT);lcd.print("% ");
-  lcd.print(hh); lcd.print(":"); lcd.print(mm);
-  //MinAct:00% hh:mm
+  lcd.print("MinActive: ");
+  lcd.print(MIN_ACT);lcd.print("%  ");
+  
+  //lcd.print(hh); lcd.print(":"); lcd.print(mm);               // MinAct:00% hh:mm           // come with RTC module
+
   
   
   //lcd.print("                ");    clsr
@@ -93,13 +120,7 @@ void loop() {
   welcome(x0, x1);
   delay(1000);
   */
-  //test button
-  short i, st;
-  for(i=0; i<10; ++i){
-    st = getButtonStatus();
-    Serial.println(st)
-    delay(200);
-  }
+  
   
   //--------------------------
   show_detail();
