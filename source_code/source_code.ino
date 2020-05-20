@@ -10,24 +10,39 @@ void show_detail();
  
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
+// declare var ----------------------------------------------------
 const float H_MAX = 3.3;                          // adj
 //const int MIN_ACT = 40;                         // const ver
 int MIN_ACT = 40;
 int button = 7 ;                                  // get digital input from pin 7st
 
-float h_input = 1.65;                             // temporory input
-int humi =  (h_input*100)/H_MAX;                  // humidity
+int led = 8;
 
+// float h_input = 1.65;                             // temporory input     OLDER
+// int humi =  (h_input*100)/H_MAX;                  // humidity            OLDER
+int humi;// =  (h_input*100)/H_MAX;                  // humidity
 
 char x0[] = "-.- CCK12DT1 -.-";
 char x1[] = " Auto Watering ";
 char sts[] = "OFF";
 int hh=23;
 int mm=59;
+
+////
+int analog_input = A0;
+float voltage;
+int value;
+
+float analog_max_input = 2.2;
+////
+// declare var ----------------------------------------------------
+
 //----------------------------------
 
 void setup() {
   pinMode(button, INPUT);
+
+  pinMode(led, OUTPUT);
   //
 
   lcd.begin(16, 2);                               // declare LCD 1602
@@ -36,14 +51,15 @@ void setup() {
 
 }
 //----------------------------------
-int getButtonStatus(){
-  //
-  short buttonStatus;
-  buttonStatus = digitalRead(button);
-  return buttonStatus;
-}
-  
   //--------- unit func
+  int getButtonStatus(){
+    //
+    short buttonStatus;
+    buttonStatus = digitalRead(button);
+    return buttonStatus;
+  }
+  
+
   void print_change(){
        lcd.setCursor(0, 0);
        lcd.print("MinAct: ");
@@ -92,7 +108,47 @@ void welcome(char x0[] , char x1[]){
   lcd.setCursor(0, 1);
   lcd.print(x1);
 }
+
+/*
+int read_analog_input(int value){
+  int h;
+
+  //  value = analogRead(analog_input);
+
+  voltage = (value/1023.0) / 5.0;                 // get voltage by standard: 0 -> 1023
+  voltage -= 1;
+
+  h = (voltage / analog_max_input) * 100;      // percent
+  
+  // catch exception
+  if (h<0) h = 0;
+  if (h>100) h = 100;
+
+  h = 100 - h;
+
+  return h;
+
+}
+*/
+
 void show_detail(){
+    float volt;
+    int value;
+    
+    value = analogRead(analog_input);
+       
+    volt = (value/1023.0) * 5.0;                    // get voltage by standard: 0 -> 1023
+    volt -= 1;
+       //Serial.println(volt);
+    humi= (volt/2.2) * 100;                         // percent
+
+    if(humi<0){humi = 0;}
+    if(humi>100){ humi = 100;}
+    
+    humi= 100 - humi;
+
+//----------------
+
   lcd.setCursor(0, 0);
   lcd.print("CurH:");
   lcd.print(humi);
@@ -103,13 +159,19 @@ void show_detail(){
   lcd.setCursor(0, 1);
   lcd.print("MinActive: ");
   lcd.print(MIN_ACT);lcd.print("%  ");
-  
-  //lcd.print(hh); lcd.print(":"); lcd.print(mm);               // MinAct:00% hh:mm           // come with RTC module
+
+  //---------------
+  if(humi>=MIN_ACT){
+    digitalWrite(led, LOW);
+    delay(200);
+  }else{
+    digitalWrite(led, HIGH);
+  }
+  //---------------
 
   
-  
-  //lcd.print("                ");    clsr
-  delay(3000);
+  //lcd.print(hh); lcd.print(":"); lcd.print(mm);               // MinAct:00% hh:mm           // come with RTC module
+  delay(500);                                               // adjust here
 }
 
 void loop() {
@@ -120,8 +182,7 @@ void loop() {
   welcome(x0, x1);
   delay(1000);
   */
-  
-  
+
   //--------------------------
   show_detail();
 }
