@@ -1,41 +1,36 @@
 #include <LiquidCrystal.h>
-#include <string.h>
 
+
+//function prototype---------------
 void welcome(char[], char[]);
 void show_setup();
 void show_detail();
 
-// function prototype
 //---------------------------------
  
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 // declare var ----------------------------------------------------
-const float H_MAX = 3.3;                          // adj
-//const int MIN_ACT = 40;                         // const ver
+const float H_MAX = 3.3;                              // adjust
 int MIN_ACT = 40;
 int MAX_ACT = 80;
-int button = 7 ;                                  // get digital input from pin 7st
 
-int led = 8;
+short button = 7;                                     // get digital input from pin 7st
+short led = 8;                                        // get digital output from pin 8st
 
-// float h_input = 1.65;                             // temporory input     OLDER
-// int humi =  (h_input*100)/H_MAX;                  // humidity            OLDER
-int humi;// =  (h_input*100)/H_MAX;                  // humidity
+int humi;
 
 char x0[] = "-.- CCK12DT1 -.-";
 char x1[] = " Auto Watering ";
 char sts[] = "OFF";
-int hh = 23;
-int mm = 59;
 
-////
-int analog_input = A0;
+//
+short analog_input = A0;                              //
 float voltage;
 int value;
 
-float analog_max_input = 2.2;
-////
+float analog_max_input = 2.2;                         // maximum value given by output of humidity sensor
+
 // declare var ----------------------------------------------------
 
 //----------------------------------
@@ -47,13 +42,18 @@ void setup() {
   //
 
   lcd.begin(16, 2);                               // declare LCD 1602
-  Serial.begin(9600);                             // debugging
+  Serial.begin(9600);                             // debug
+
+  welcome(x0, x1);
+  //delay(5000);
+  
   show_setup();
 
 }
 //----------------------------------
-  //--------- unit func
-  int getButtonStatus(){
+
+  //unit func-----------------------
+  short getButtonStatus(){
     //
     short buttonStatus;
     buttonStatus = digitalRead(button);
@@ -62,14 +62,20 @@ void setup() {
   
 
   void print_change(){
-       lcd.setCursor(0, 0);
-       lcd.print("MinAct: ");
-       lcd.print(MIN_ACT);lcd.print("%");
 
-       delay(200);
+    lcd.setCursor(0, 0);
+    lcd.print("MinAct: ");
+    if(MIN_ACT <= 100){
+      lcd.print(MIN_ACT);lcd.print("%");
+    }else{
+      lcd.print("FULL");
+      lcd.clear();
+      MIN_ACT = 0;
+    }
+    delay(50);
 
   }
-  //---------
+  //-------------------------------
   
 void show_setup(){
   lcd.setCursor(0, 0);
@@ -79,35 +85,82 @@ void show_setup(){
   lcd.print("2-Skip( default)");
   delay(3000);
 
-  lcd.clear();
+  {// prompt---------------------------------
+    lcd.clear();
+    lcd.print("Choose MinAct");
+    
+    for(short i=0; i<5; ++i){
+      lcd.display();
+      delay(300);
+      lcd.noDisplay();
+      delay(300);
+    }
+    
+    lcd.display();
+    lcd.clear();
+  }//----------------------------------------
+  
   short i;
   for(i=0; i<=5; ++i){
-     lcd.noCursor();
-     delay(300);
-     lcd.cursor();
-     delay(300);
+    lcd.noCursor();
+    delay(300);
+    lcd.cursor();
+    delay(300);
+    
+    if(getButtonStatus()){
+      break;
+    }
+    
   }
+  /*
+  {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(">>");
+    lcd.clear();
+  }
+  */
+
   
   //test button
-  
   short st;
   for(i=0; i<100; ++i){
     st = getButtonStatus();
-    if(st == 1){                                       //if(st){}
-      MIN_ACT += 5;
-      print_change();
+    if(st == 1){                                      // if(st){}
+      MIN_ACT += 5;                                   // 5 percent in a press
     }
-    // Serial.println(st);                          // debugging
-    // Serial.println(MIN_ACT);                     // debugging
-    delay(100);
+    
+    delay(50);  
+    print_change();
+    delay(50);  
+    // Serial.println(st);                            // debug
+    // Serial.println(MIN_ACT);                       // debug
   }
 }
 
 void welcome(char x0[] , char x1[]){
-  lcd.setCursor(0, 0);
-  lcd.print(x0);
-  lcd.setCursor(0, 1);
-  lcd.print(x1);
+  short i;
+  for(i=0; i<=5; ++i){
+    lcd.setCursor(0, 0);
+    lcd.print(x0);
+    lcd.setCursor(0, 1);
+    lcd.print(x1);
+    delay(500);
+    lcd.clear();
+    delay(100);
+  }
+
+  
+  {// resource-------------------------------
+    lcd.setCursor(15, 0);
+    lcd.print("github.com/n0crush");
+    for (short pos = 0; pos < (18+15); pos++) {
+      lcd.scrollDisplayLeft();
+      delay(350);
+    }
+  lcd.clear();
+  }//----------------------------------------
+
 }
 
 /*
@@ -133,18 +186,23 @@ int read_analog_input(int value){
 */
 
 void show_detail(){
-    float volt;
-    int value;
     
     value = analogRead(analog_input);
        
-    volt = (value / 1023.0) * 5.0;                    // get voltage by standard: 0 -> 1023
-    volt -= 1;
-       //Serial.println(volt);
-    humi= (volt / analog_max_input) * 100;                         // percent
+    voltage = (value / 1023.0) * 5.0;                           // get voltage standard: 0 -> 1023
+    voltage -= 1;
 
-    if(humi < 0){humi = 0;}
-    if(humi > 100){ humi = 100;}
+    //Serial.println(voltage);                                  // debug
+
+    humi = (voltage / analog_max_input) * 100;                  // percent
+
+
+    if(humi < 0){
+      humi = 0;
+    }
+    if(humi > 100){
+      humi = 100;
+    }
     
     humi= 100 - humi;
 
@@ -159,43 +217,41 @@ void show_detail(){
   
   lcd.setCursor(0, 1);
   lcd.print("MinActive: ");
-  lcd.print(MIN_ACT);lcd.print("%  ");
+  lcd.print(MIN_ACT);
+  lcd.print("%  ");
+  //
 
   //---------------
   if(humi <= MIN_ACT){
     digitalWrite(led, HIGH);
-    sts[0] = 'O'; sts[1] = 'N'; sts[2] = ' ';
-
+    sts[0] = 'O'; sts[1] = 'N'; sts[2] = ' '; sts[3] = ' ';
+  }else if (humi >= MAX_ACT){                                     // maximum humidity to stop pump
+    delay(200);
+    digitalWrite(led, LOW);
+    sts[0] = 'O'; sts[1] = 'F'; sts[2] = 'F';
   }
-  else if (humi >= MAX_ACT){          // maximum humidity to stop pump
-      delay(200);
-      digitalWrite(led, LOW);
-      sts[0] = 'O'; sts[1] = 'F'; sts[2] = 'F';
 
-  }
-  /*else{
+
+  /*
+  else{
     digitalWrite(led, LOW);
     sts[0] = 'O'; sts[1] = 'F'; sts[2] = 'F';
     delay(200);
-
   }
   */
   //---------------
 
   
-  //lcd.print(hh); lcd.print(":"); lcd.print(mm);               // MinAct:00% hh:mm           // come with RTC module
+  //lcd.print(hh); lcd.print(":"); lcd.print(mm);            // MinAct:00% hh:mm    --   come with RTC module
+  
   delay(500);                                               // adjust here
 }
 
 void loop() {
   
-  //Serial.println(humi);                                   // debugging
-  
-  /*
-  welcome(x0, x1);
-  delay(1000);
-  */
-
+  //Serial.println(humi);                                   // debug
   //--------------------------
+  
   show_detail();
+  
 }
