@@ -1,3 +1,4 @@
+
 #include <LiquidCrystal.h>
 
 
@@ -8,12 +9,13 @@ void show_detail();
 
 //---------------------------------
  
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);				// initialize communication 4bits btw lcd & MCU
 
 // declare var ----------------------------------------------------
-const float H_MAX = 3.3;                              // adjust
-int MIN_ACT = 40;
-int MAX_ACT = 80;
+/* const float H_MAX = 3.3;                              // adjust */
+
+int MIN_ACT = 40;										// minimum humidity to activate
+int MAX_ACT = 80;										// maximum humidity to deactivate
 
 short button = 7;                                     // get digital input from pin 7st
 short led = 8;                                        // get digital output from pin 8st
@@ -25,7 +27,7 @@ char x1[] = " Auto Watering ";
 char sts[] = "OFF";
 
 //
-short analog_input = A0;                              //
+short analog_input = A0;                              // analog input pin - read from sensor
 float voltage;
 int value;
 
@@ -42,7 +44,7 @@ void setup() {
   //
 
   lcd.begin(16, 2);                               // declare LCD 1602
-  Serial.begin(9600);                             // debug
+  /* Serial.begin(9600);                             // debug */
 
   welcome(x0, x1);
   //delay(5000);
@@ -85,7 +87,7 @@ void show_setup(){
   lcd.print("2-Skip( default)");
   delay(3000);
 
-  {// prompt---------------------------------
+  {// prompt---------------------------------		// prompt to user to get minimum activate
     lcd.clear();
     lcd.print("Choose MinAct");
     
@@ -163,7 +165,7 @@ void welcome(char x0[] , char x1[]){
 
 }
 
-/*
+/*****ignore
 int read_analog_input(int value){
   int h;
 
@@ -190,13 +192,13 @@ void show_detail(){
     value = analogRead(analog_input);
        
     voltage = (value / 1023.0) * 5.0;                           // get voltage standard: 0 -> 1023
-    voltage -= 1;
+    voltage -= 1;												// '1' is the maximum value that sensor able to fully read
 
     //Serial.println(voltage);                                  // debug
 
     humi = (voltage / analog_max_input) * 100;                  // percent
 
-
+    // catch exception
     if(humi < 0){
       humi = 0;
     }
@@ -204,7 +206,7 @@ void show_detail(){
       humi = 100;
     }
     
-    humi= 100 - humi;
+    humi = 100 - humi;
 
 //----------------
 
@@ -225,7 +227,7 @@ void show_detail(){
   if(humi <= MIN_ACT){
     digitalWrite(led, HIGH);
     sts[0] = 'O'; sts[1] = 'N'; sts[2] = ' '; sts[3] = ' ';
-  }else if (humi >= MAX_ACT){                                     // maximum humidity to stop pump
+  }else if (humi >= MAX_ACT){                                     
     delay(200);
     digitalWrite(led, LOW);
     sts[0] = 'O'; sts[1] = 'F'; sts[2] = 'F';
