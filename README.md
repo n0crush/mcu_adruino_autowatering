@@ -8,7 +8,7 @@
 - **First imagin about it:**
 ![Block diagram](./media/block_diagram.PNG)
 - **Test your LCD:**
-![Test LCD](./media/connect_lcd_16x02.png)
+[Test LCD](./media/connect_lcd_16x02.png)
 - **Connect components:**
 ![Connect components](./media/components_connecting.png)
 
