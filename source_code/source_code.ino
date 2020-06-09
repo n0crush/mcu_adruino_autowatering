@@ -24,7 +24,7 @@ int humi;
 
 char x0[] = "-.- CCK12DT1 -.-";
 char x1[] = " Auto Watering ";
-char sts[] = "OFF";
+char *sts = "OFF";
 
 //
 short analog_input = A0;                              // analog input pin - read from sensor
@@ -226,11 +226,11 @@ void show_detail(){
   //---------------
   if(humi <= MIN_ACT){
     digitalWrite(led, HIGH);
-    sts[0] = 'O'; sts[1] = 'N'; sts[2] = ' '; sts[3] = ' ';
+    sts = "ON  ";
   }else if (humi >= MAX_ACT){                                     
     delay(200);
     digitalWrite(led, LOW);
-    sts[0] = 'O'; sts[1] = 'F'; sts[2] = 'F';
+    sts = "OFF";
   }
 
 
